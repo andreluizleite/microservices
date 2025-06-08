@@ -1,13 +1,14 @@
 ﻿using RuleEngine.Domain.Entities;
+using RuleEngine.Domain.Interfaces;
 
 public class HotLaunchCounter
 {
     private readonly List<Rule<AssignmentContext>> _rules;
-    private readonly IObjectRuleEvaluator<AssignmentContext> _evaluator;
+    private readonly IRuleEvaluator<AssignmentContext> _evaluator;
 
     public HotLaunchCounter(
         IEnumerable<Rule<AssignmentContext>> rules,
-        IObjectRuleEvaluator<AssignmentContext> evaluator)
+        IRuleEvaluator<AssignmentContext> evaluator)
     {
         _rules = rules.ToList();
         _evaluator = evaluator;
@@ -32,8 +33,9 @@ public class HotLaunchCounter
             leg.CounterValues.Add(new CounterValue
             {
                 CounterTypeSystemName = context.CounterType,
-                CounterValue_ = 1 // This could be replaced by a calculated value per rule
+                CounterValue_ = 1
             });
         }
     }
 }
+

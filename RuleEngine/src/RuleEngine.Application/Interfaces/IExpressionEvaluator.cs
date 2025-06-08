@@ -1,6 +1,7 @@
-﻿namespace RuleEngine.Application.Interfaces;
-
-public interface IExpressionEvaluator
+﻿namespace RuleEngine.Application.Interfaces
 {
-    bool Evaluate(string expression, IReadOnlyDictionary<string, object> context);
+    public interface IExpressionEvaluator
+    {
+        bool Evaluate(string expression, IReadOnlyDictionary<string, object> context);
+    }
 }

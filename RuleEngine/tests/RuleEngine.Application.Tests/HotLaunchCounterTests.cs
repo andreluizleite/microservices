@@ -1,5 +1,7 @@
 ﻿using RuleEngine.Application.Services;
 using RuleEngine.Domain.Entities;
+using Xunit;
+
 namespace RuleEngine.Application.Tests
 {
     public class HotLaunchCounterTests
@@ -7,7 +9,6 @@ namespace RuleEngine.Application.Tests
         [Fact]
         public void Execute_ShouldApplyCounter_WhenRuleMatches()
         {
-            // Arrange
             var assignments = new List<Assignment>
             {
                 new Leg
@@ -34,10 +35,8 @@ namespace RuleEngine.Application.Tests
             var evaluator = new ObjectRuleEvaluator<AssignmentContext>();
             var counter = new HotLaunchCounter(rules, evaluator);
 
-            // Act
             counter.Execute(context);
 
-            // Assert
             var leg = assignments[0] as Leg;
             Assert.Single(leg.CounterValues);
             Assert.Equal("IsHotLaunch", leg.CounterValues[0].CounterTypeSystemName);
@@ -47,17 +46,16 @@ namespace RuleEngine.Application.Tests
         [Fact]
         public void Execute_ShouldInvokeAction_WhenRuleMatches()
         {
-            // Arrange
             var assignments = new List<Assignment>
-    {
-        new Leg
-        {
-            FlightNumber = 456,
-            ActualStart = DateTime.UtcNow,
-            ActualEnd = DateTime.UtcNow.AddHours(2),
-            ServiceTypeCode = "FLT"
-        }
-    };
+            {
+                new Leg
+                {
+                    FlightNumber = 456,
+                    ActualStart = DateTime.UtcNow,
+                    ActualEnd = DateTime.UtcNow.AddHours(2),
+                    ServiceTypeCode = "FLT"
+                }
+            };
 
             var context = new AssignmentContext
             {
@@ -73,8 +71,6 @@ namespace RuleEngine.Application.Tests
                 action: ctx =>
                 {
                     actionInvoked = true;
-
-                    // Simulate some custom logic (e.g., tagging leg with a custom value)
                     foreach (var leg in ctx.Assignments.OfType<Leg>())
                     {
                         leg.CounterValues.Add(new CounterValue
@@ -89,14 +85,49 @@ namespace RuleEngine.Application.Tests
             var evaluator = new ObjectRuleEvaluator<AssignmentContext>();
             var counter = new HotLaunchCounter(rules, evaluator);
 
-            // Act
             counter.Execute(context);
 
-            // Assert
             Assert.True(actionInvoked);
             var leg = assignments[0] as Leg;
             Assert.Contains(leg.CounterValues, c => c.CounterTypeSystemName == "CustomAction" && c.CounterValue_ == 99);
         }
 
+        [Fact]
+        public void Execute_ShouldApplyCounter_WhenExpressionRuleMatches()
+        {
+            var assignments = new List<Assignment>
+            {
+                new Leg
+                {
+                    FlightNumber = 456,
+                    ActualStart = DateTime.UtcNow,
+                    ActualEnd = DateTime.UtcNow.AddHours(2),
+                    ServiceTypeCode = "FLT"
+                }
+            };
+
+            var context = new AssignmentContext
+            {
+                Assignments = assignments,
+                CounterType = "IsLongFlight"
+            };
+
+            var rule = Rule<AssignmentContext>.FromExpression(
+                "LongFlightExpressionRule",
+                "Assignments.Count() > 0"
+            );
+
+
+            var rules = new List<Rule<AssignmentContext>> { rule };
+            var evaluator = new ExpressionRuleEvaluator<AssignmentContext>();
+            var counter = new HotLaunchCounter(rules, evaluator);
+
+            counter.Execute(context);
+
+            var leg = assignments[0] as Leg;
+            Assert.Single(leg.CounterValues);
+            Assert.Equal("IsLongFlight", leg.CounterValues[0].CounterTypeSystemName);
+            Assert.Equal(1, leg.CounterValues[0].CounterValue_);
+        }
     }
 }

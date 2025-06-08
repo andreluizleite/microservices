@@ -1,14 +1,14 @@
-﻿using RuleEngine.Application.Interfaces;
-using RuleEngine.Domain.Entities;
+﻿using RuleEngine.Domain.Entities;
+using RuleEngine.Domain.Interfaces;
 
 namespace RuleEngine.Application.Services
 {
-    public class ObjectRuleEvaluator<T> : IObjectRuleEvaluator<T>
+    public class ObjectRuleEvaluator<T> : IObjectRuleEvaluator<T>, IRuleEvaluator<T>
     {
         public bool Evaluate(Rule<T> rule, T input)
         {
-            if (rule.CompiledCondition is null)
-                throw new InvalidOperationException("Missing compiled condition.");
+            if (rule.CompiledCondition == null)
+                throw new InvalidOperationException("CompiledCondition is required.");
 
             return rule.CompiledCondition(input);
         }
