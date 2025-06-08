@@ -1,5 +1,5 @@
 ﻿
-namespace RuleEngine.Application.Evaluators
+namespace RuleEngine.Domain.Entities
 {
     public class CounterValue
     {

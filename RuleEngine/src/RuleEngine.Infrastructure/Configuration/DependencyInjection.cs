@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using RuleEngine.Application.Evaluators;
 using RuleEngine.Application.Interfaces;
 using RuleEngine.Application.Services;
 using RuleEngine.Domain.Interfaces;
