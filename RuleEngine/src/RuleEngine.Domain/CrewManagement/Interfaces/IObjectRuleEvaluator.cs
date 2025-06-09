@@ -1,6 +1,6 @@
-﻿using RuleEngine.Domain.Entities;
+﻿using RuleEngine.Domain.CrewManagement.Entities;
 
-namespace RuleEngine.Domain.Interfaces
+namespace RuleEngine.Domain.CrewManagement.Interfaces
 {
     public interface IObjectRuleEvaluator<T>
     {

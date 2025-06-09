@@ -1,5 +1,4 @@
-﻿
-namespace RuleEngine.Application.Evaluators
+﻿namespace RuleEngine.Domain.CrewManagement.Entities
 {
     public class AssignmentContext
     {

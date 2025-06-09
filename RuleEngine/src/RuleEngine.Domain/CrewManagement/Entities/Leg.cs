@@ -1,9 +1,9 @@
-﻿
-namespace RuleEngine.Application.Evaluators
+﻿namespace RuleEngine.Domain.CrewManagement.Entities
 {
-    public class Leg : Assignment
+    public class Leg : Assignment 
     {
         public int FlightNumber { get; set; }
+
         public List<CounterValue> CounterValues { get; set; } = new();
     }
 }

@@ -1,7 +1,6 @@
-using RuleEngine.Application.Evaluators;
-using RuleEngine.Application.Interfaces;
 using RuleEngine.Application.Services;
-using RuleEngine.Domain.Entities;
+using RuleEngine.Domain.CrewManagement.Entities;
+using RuleEngine.Domain.CrewManagement.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,8 +8,12 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 builder.Services.AddScoped<IObjectRuleEvaluator<Activity>, ActivityRuleEvaluator>();
-builder.Services.AddScoped(typeof(IObjectRuleEvaluator<>), typeof(ObjectRuleEvaluator<>));
 builder.Services.AddScoped<HotLaunchCounter>();
+builder.Services.AddScoped<IObjectRuleEvaluator<AssignmentContext>, ObjectRuleEvaluator<AssignmentContext>>();
+builder.Services.AddSingleton(typeof(IRuleEvaluator<>), typeof(ExpressionRuleEvaluator<>));
+builder.Services.AddSingleton(typeof(IObjectRuleEvaluator<>), typeof(ObjectRuleEvaluator<>));
+
+
 
 
 var app = builder.Build();
