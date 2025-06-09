@@ -1,6 +1,6 @@
 using RuleEngine.Application.Services;
-using RuleEngine.Domain.Entities;
-using RuleEngine.Domain.Interfaces;
+using RuleEngine.Domain.CrewManagement.Entities;
+using RuleEngine.Domain.CrewManagement.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 

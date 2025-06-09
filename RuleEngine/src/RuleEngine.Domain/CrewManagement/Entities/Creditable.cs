@@ -1,4 +1,4 @@
-﻿namespace RuleEngine.Domain.Entities;
+﻿namespace RuleEngine.Domain.CrewManagement.Entities;
 public abstract class Creditable
 {
     public List<CounterValue> CounterValues { get; set; } = new();

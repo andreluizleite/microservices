@@ -1,6 +1,7 @@
 ﻿using RuleEngine.Application.Services;
-using RuleEngine.Domain.Entities;
-using RuleEngine.Domain.Entities.Evaluation;
+using RuleEngine.Domain.CrewManagement.Entities;
+using RuleEngine.Domain.CrewManagement.Entities.Evaluation;
+
 namespace RuleEngine.Application.Tests;
 
 public class HotLaunchCounterTests

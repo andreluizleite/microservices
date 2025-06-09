@@ -1,4 +1,4 @@
-﻿namespace RuleEngine.Domain.Interfaces;
+﻿namespace RuleEngine.Domain.CrewManagement.Interfaces;
 
 public interface IRule
 {

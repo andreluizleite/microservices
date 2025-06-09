@@ -1,5 +1,5 @@
 ﻿using RuleEngine.Application.Interfaces;
-using RuleEngine.Domain.Entities;
+using RuleEngine.Domain.CrewManagement.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq.Dynamic.Core;

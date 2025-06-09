@@ -1,4 +1,4 @@
-﻿namespace RuleEngine.Domain.Enums
+﻿namespace RuleEngine.Domain.CrewManagement.Enums
 {
     public enum CreditableType
     {

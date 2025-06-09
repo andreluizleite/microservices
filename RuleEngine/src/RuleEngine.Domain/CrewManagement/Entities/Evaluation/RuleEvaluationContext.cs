@@ -1,6 +1,7 @@
-﻿using RuleEngine.Domain.Enums;
+﻿using RuleEngine.Domain.CrewManagement.Entities;
+using RuleEngine.Domain.CrewManagement.Enums;
 
-namespace RuleEngine.Domain.Entities.Evaluation
+namespace RuleEngine.Domain.CrewManagement.Entities.Evaluation
 {
     public class RuleEvaluationContext
     {

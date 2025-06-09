@@ -1,6 +1,6 @@
-﻿using RuleEngine.Domain.Entities;
-using RuleEngine.Domain.Entities.Evaluation;
-using RuleEngine.Domain.Interfaces;
+﻿using RuleEngine.Domain.CrewManagement.Entities;
+using RuleEngine.Domain.CrewManagement.Entities.Evaluation;
+using RuleEngine.Domain.CrewManagement.Interfaces;
 
 public class HotLaunchCounter
 {
