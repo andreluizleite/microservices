@@ -1,8 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using RuleEngine.Application.Interfaces;
 using RuleEngine.Application.Services;
-using RuleEngine.Domain.Interfaces;
-using RuleEngine.Infrastructure.Persistence;
 
 namespace RuleEngine.Infrastructure;
 

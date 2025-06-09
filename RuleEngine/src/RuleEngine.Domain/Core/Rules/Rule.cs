@@ -1,4 +1,4 @@
-﻿namespace RuleEngine.Domain.CrewManagement.Entities
+﻿namespace RuleEngine.Domain.Core.Rules
 {
     public class Rule<T>
     {

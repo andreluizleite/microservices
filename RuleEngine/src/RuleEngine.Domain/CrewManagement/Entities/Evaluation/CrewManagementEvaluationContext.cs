@@ -1,9 +1,8 @@
-﻿using RuleEngine.Domain.CrewManagement.Entities;
-using RuleEngine.Domain.CrewManagement.Enums;
+﻿using RuleEngine.Domain.CrewManagement.Enums;
 
 namespace RuleEngine.Domain.CrewManagement.Entities.Evaluation
 {
-    public class RuleEvaluationContext
+    public class CrewManagementEvaluationContext
     {
         /// <summary>
         /// Creditable entities under evaluation (e.g., DutyPeriod, Leg, GroundActivity).

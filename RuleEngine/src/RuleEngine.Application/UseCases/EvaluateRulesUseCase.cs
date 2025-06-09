@@ -1,4 +1,5 @@
-﻿using RuleEngine.Domain.CrewManagement.Entities;
+﻿using RuleEngine.Domain.Core.Rules;
+using RuleEngine.Domain.CrewManagement.Entities;
 
 namespace RuleEngine.Application.Services;
 

@@ -1,4 +1,4 @@
-﻿using RuleEngine.Domain.CrewManagement.Entities;
+﻿using RuleEngine.Domain.Core.Rules;
 
 public interface IObjectRuleEvaluator<T>
 {

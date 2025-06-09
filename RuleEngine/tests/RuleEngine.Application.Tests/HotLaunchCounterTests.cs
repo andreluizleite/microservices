@@ -1,4 +1,5 @@
 ﻿using RuleEngine.Application.Services;
+using RuleEngine.Domain.Core.Rules;
 using RuleEngine.Domain.CrewManagement.Entities;
 using RuleEngine.Domain.CrewManagement.Entities.Evaluation;
 
@@ -6,9 +7,9 @@ namespace RuleEngine.Application.Tests;
 
 public class HotLaunchCounterTests
 {
-    private RuleEvaluationContext CreateContext(string counterType)
+    private CrewManagementEvaluationContext CreateContext(string counterType)
     {
-        return new RuleEvaluationContext
+        return new CrewManagementEvaluationContext
         {
             Assignments = new List<Assignment>
             {
@@ -29,13 +30,13 @@ public class HotLaunchCounterTests
     {
         var context = CreateContext("IsHotLaunch");
 
-        var rule = Rule<RuleEvaluationContext>.Create(
+        var rule = Rule<CrewManagementEvaluationContext>.Create(
             "ValidLegsExist",
             ctx => ctx.Assignments.OfType<Leg>().Any()
         );
 
-        var rules = new List<Rule<RuleEvaluationContext>> { rule };
-        var evaluator = new ObjectRuleEvaluator<RuleEvaluationContext>();
+        var rules = new List<Rule<CrewManagementEvaluationContext>> { rule };
+        var evaluator = new ObjectRuleEvaluator<CrewManagementEvaluationContext>();
         var counter = new HotLaunchCounter(rules, evaluator);
 
         counter.Execute(context);
@@ -53,7 +54,7 @@ public class HotLaunchCounterTests
 
         bool actionInvoked = false;
 
-        var rule = Rule<RuleEvaluationContext>.Create(
+        var rule = Rule<CrewManagementEvaluationContext>.Create(
             "ActionRule",
             ctx => ctx.Assignments.OfType<Leg>().Any(),
             action: ctx =>
@@ -65,8 +66,8 @@ public class HotLaunchCounterTests
                 }
             });
 
-        var rules = new List<Rule<RuleEvaluationContext>> { rule };
-        var evaluator = new ObjectRuleEvaluator<RuleEvaluationContext>();
+        var rules = new List<Rule<CrewManagementEvaluationContext>> { rule };
+        var evaluator = new ObjectRuleEvaluator<CrewManagementEvaluationContext>();
         var counter = new HotLaunchCounter(rules, evaluator);
 
         counter.Execute(context);
@@ -81,15 +82,19 @@ public class HotLaunchCounterTests
     {
         var context = CreateContext("IsLongFlight");
 
-        var rule = Rule<RuleEvaluationContext>.FromExpression(
+        var rule = Rule<CrewManagementEvaluationContext>.FromExpression(
             "ComplexFlightRule",
             "Legs.Any(FlightNumber > 100 && ServiceTypeCode == \"FLT\")"
 
         );
 
 
-        var rules = new List<Rule<RuleEvaluationContext>> { rule };
-        var evaluator = new ExpressionRuleEvaluator<RuleEvaluationContext>();
+        var rules = new List<Rule<CrewManagementEvaluationContext>> { rule };
+        var evaluator = new ExpressionRuleEvaluator<CrewManagementEvaluationContext>(ctx => new Dictionary<string, object>
+        {
+            { "Legs", ctx.Assignments.OfType<Leg>().ToList() },
+            { "Assignments", ctx.Assignments }
+        });
         var counter = new HotLaunchCounter(rules, evaluator);
 
         counter.Execute(context);
