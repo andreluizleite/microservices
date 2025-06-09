@@ -3,8 +3,8 @@
     public class CounterValue
     {
         public string CounterTypeSystemName { get; set; }
-        public int CounterValue_ { get; set; }
-        public CounterValue(string counterTypeSystemName, int counterValue)
+        public decimal CounterValue_ { get; set; }
+        public CounterValue(string counterTypeSystemName, decimal counterValue)
         {
             CounterTypeSystemName = counterTypeSystemName;
             CounterValue_ = counterValue;

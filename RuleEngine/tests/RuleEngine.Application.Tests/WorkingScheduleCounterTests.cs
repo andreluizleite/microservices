@@ -1,5 +1,6 @@
 ﻿using RuleEngine.Application.Evaluators;
 using RuleEngine.Application.Services;
+using RuleEngine.Domain.Core.Extensions;
 using RuleEngine.Domain.Core.Rules;
 using RuleEngine.Domain.CrewManagement.Entities;
 using RuleEngine.Domain.WorkingSchedules.Entities;
@@ -19,7 +20,16 @@ public class WorkingScheduleCounterTests
                 new WorkShift
                 {
                     ShiftId = "SHIFT1",
-                    AssignedTo = "User123"
+                    AssignedTo = "User123",
+                    Tasks = new List<WorkTask>
+                    {
+                        new WorkTask
+                        {
+                        TaskId = "TASK1",
+                        Start = DateTime.UtcNow,
+                        End = DateTime.UtcNow.AddDays(4),
+                        }
+                    }
                 }
             },
             CounterType = counterType
@@ -36,15 +46,37 @@ public class WorkingScheduleCounterTests
             ctx => ctx.Shifts.Any()
         );
 
-        var rules = new List<Rule<WorkingScheduleEvaluationContext>> { rule };
+        var rule2 = Rule<WorkingScheduleEvaluationContext>.Create(
+            "MoreThan1",
+            ctx => ctx.Shifts
+                      .SelectMany(s => s.Tasks)
+                      .Any(t => (t.End - t.Start) > TimeSpan.FromDays(6))
+        );
+
+        var rule3 = Rule<WorkingScheduleEvaluationContext>.Create(
+            "OddTaskIdEnding",
+            ctx =>
+            {
+                // Apenas leitura dos dados, sem modificar o contexto
+                return ctx.Shifts
+                          .SelectMany(s => s.Tasks)
+                          .Any(t =>
+                          {
+                              var lastChar = t.TaskId?.LastOrDefault();
+                              return char.IsDigit((char)lastChar) && int.Parse(lastChar.ToString()) % 2 != 0;
+                          });
+            }
+        );
+
+        var rules = new List<Rule<WorkingScheduleEvaluationContext>> { rule, rule2, rule3 };
         var evaluator = new ObjectRuleEvaluator<WorkingScheduleEvaluationContext>();
         var counter = new WorkingHoursCounter(rules, evaluator);
 
         counter.Execute(context);
 
         var shift = context.Shifts.First();
-        Assert.Single(shift.CounterValues);
-        Assert.Equal("BasicShift", shift.CounterValues[0].CounterTypeSystemName);
+        Assert.Equal(3, shift.CounterValues.Count());
+        Assert.Equal("ValidShiftsExist", shift.CounterValues[0].CounterTypeSystemName);
         Assert.Equal(1, shift.CounterValues[0].CounterValue_);
     }
 

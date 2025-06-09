@@ -1,6 +1,8 @@
-﻿namespace RuleEngine.Domain.CrewManagement.Entities
+﻿using RuleEngine.Domain.Core.Interfaces;
+
+namespace RuleEngine.Domain.CrewManagement.Entities
 {
-    public class Leg : Assignment 
+    public class Leg : Assignment, ICounterTrackable
     {
         public int FlightNumber { get; set; }
 
