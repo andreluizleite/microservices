@@ -25,6 +25,7 @@ namespace RuleEngine.Application.Evaluators
                 if (_evaluator.Evaluate(rule, context))
                 {
                     rule.Action?.Invoke(context);
+                    context.CounterType = rule.Name;
                     ApplyCounter(context);
                 }
             }

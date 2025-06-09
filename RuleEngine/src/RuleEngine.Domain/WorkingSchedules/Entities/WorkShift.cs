@@ -1,9 +1,10 @@
-﻿using RuleEngine.Domain.CrewManagement.Entities;
+﻿using RuleEngine.Domain.Core.Interfaces;
+using RuleEngine.Domain.CrewManagement.Entities;
 using System.Collections.Generic;
 
 namespace RuleEngine.Domain.WorkingSchedules.Entities
 {
-    public class WorkShift
+    public class WorkShift : ICounterTrackable
     {
         public string ShiftId { get; set; } = string.Empty;
         public List<WorkTask> Tasks { get; set; } = new();
