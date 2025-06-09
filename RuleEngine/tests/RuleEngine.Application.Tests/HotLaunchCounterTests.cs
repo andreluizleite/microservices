@@ -1,15 +1,15 @@
 ﻿using RuleEngine.Application.Services;
 using RuleEngine.Domain.Entities;
-using Xunit;
+using RuleEngine.Domain.Entities.Evaluation;
+namespace RuleEngine.Application.Tests;
 
-namespace RuleEngine.Application.Tests
+public class HotLaunchCounterTests
 {
-    public class HotLaunchCounterTests
+    private RuleEvaluationContext CreateContext(string counterType)
     {
-        [Fact]
-        public void Execute_ShouldApplyCounter_WhenRuleMatches()
+        return new RuleEvaluationContext
         {
-            var assignments = new List<Assignment>
+            Assignments = new List<Assignment>
             {
                 new Leg
                 {
@@ -18,116 +18,84 @@ namespace RuleEngine.Application.Tests
                     ActualEnd = DateTime.UtcNow.AddHours(1),
                     ServiceTypeCode = "FLT"
                 }
-            };
+            },
+            CounterType = counterType
+        };
+    }
 
-            var context = new AssignmentContext
+    [Fact]
+    public void Execute_ShouldApplyCounter_WhenRuleMatches()
+    {
+        var context = CreateContext("IsHotLaunch");
+
+        var rule = Rule<RuleEvaluationContext>.Create(
+            "ValidLegsExist",
+            ctx => ctx.Assignments.OfType<Leg>().Any()
+        );
+
+        var rules = new List<Rule<RuleEvaluationContext>> { rule };
+        var evaluator = new ObjectRuleEvaluator<RuleEvaluationContext>();
+        var counter = new HotLaunchCounter(rules, evaluator);
+
+        counter.Execute(context);
+
+        var leg = context.Assignments[0] as Leg;
+        Assert.Single(leg.CounterValues);
+        Assert.Equal("IsHotLaunch", leg.CounterValues[0].CounterTypeSystemName);
+        Assert.Equal(1, leg.CounterValues[0].CounterValue_);
+    }
+
+    [Fact]
+    public void Execute_ShouldInvokeAction_WhenRuleMatches()
+    {
+        var context = CreateContext("ActionHotLaunch");
+
+        bool actionInvoked = false;
+
+        var rule = Rule<RuleEvaluationContext>.Create(
+            "ActionRule",
+            ctx => ctx.Assignments.OfType<Leg>().Any(),
+            action: ctx =>
             {
-                Assignments = assignments,
-                CounterType = "IsHotLaunch"
-            };
-
-            var rule = Rule<AssignmentContext>.Create(
-                "ValidLegsExist",
-                ctx => ctx.Assignments.OfType<Leg>().Any()
-            );
-
-            var rules = new List<Rule<AssignmentContext>> { rule };
-            var evaluator = new ObjectRuleEvaluator<AssignmentContext>();
-            var counter = new HotLaunchCounter(rules, evaluator);
-
-            counter.Execute(context);
-
-            var leg = assignments[0] as Leg;
-            Assert.Single(leg.CounterValues);
-            Assert.Equal("IsHotLaunch", leg.CounterValues[0].CounterTypeSystemName);
-            Assert.Equal(1, leg.CounterValues[0].CounterValue_);
-        }
-
-        [Fact]
-        public void Execute_ShouldInvokeAction_WhenRuleMatches()
-        {
-            var assignments = new List<Assignment>
-            {
-                new Leg
+                actionInvoked = true;
+                foreach (var leg in ctx.Assignments.OfType<Leg>())
                 {
-                    FlightNumber = 456,
-                    ActualStart = DateTime.UtcNow,
-                    ActualEnd = DateTime.UtcNow.AddHours(2),
-                    ServiceTypeCode = "FLT"
+                    leg.CounterValues.Add(new CounterValue("CustomAction", 99));
                 }
-            };
+            });
 
-            var context = new AssignmentContext
-            {
-                Assignments = assignments,
-                CounterType = "ActionHotLaunch"
-            };
+        var rules = new List<Rule<RuleEvaluationContext>> { rule };
+        var evaluator = new ObjectRuleEvaluator<RuleEvaluationContext>();
+        var counter = new HotLaunchCounter(rules, evaluator);
 
-            bool actionInvoked = false;
+        counter.Execute(context);
 
-            var rule = Rule<AssignmentContext>.Create(
-                "ActionRule",
-                ctx => ctx.Assignments.OfType<Leg>().Any(),
-                action: ctx =>
-                {
-                    actionInvoked = true;
-                    foreach (var leg in ctx.Assignments.OfType<Leg>())
-                    {
-                        leg.CounterValues.Add(new CounterValue
-                        {
-                            CounterTypeSystemName = "CustomAction",
-                            CounterValue_ = 99
-                        });
-                    }
-                });
+        Assert.True(actionInvoked);
+        var leg = context.Assignments[0] as Leg;
+        Assert.Contains(leg.CounterValues, c => c.CounterTypeSystemName == "CustomAction" && c.CounterValue_ == 99);
+    }
 
-            var rules = new List<Rule<AssignmentContext>> { rule };
-            var evaluator = new ObjectRuleEvaluator<AssignmentContext>();
-            var counter = new HotLaunchCounter(rules, evaluator);
+    [Fact]
+    public void Execute_ShouldApplyCounter_WhenExpressionRuleMatches()
+    {
+        var context = CreateContext("IsLongFlight");
 
-            counter.Execute(context);
+        var rule = Rule<RuleEvaluationContext>.FromExpression(
+            "ComplexFlightRule",
+            "Legs.Any(FlightNumber > 100 && ServiceTypeCode == \"FLT\")"
 
-            Assert.True(actionInvoked);
-            var leg = assignments[0] as Leg;
-            Assert.Contains(leg.CounterValues, c => c.CounterTypeSystemName == "CustomAction" && c.CounterValue_ == 99);
-        }
-
-        [Fact]
-        public void Execute_ShouldApplyCounter_WhenExpressionRuleMatches()
-        {
-            var assignments = new List<Assignment>
-            {
-                new Leg
-                {
-                    FlightNumber = 456,
-                    ActualStart = DateTime.UtcNow,
-                    ActualEnd = DateTime.UtcNow.AddHours(2),
-                    ServiceTypeCode = "FLT"
-                }
-            };
-
-            var context = new AssignmentContext
-            {
-                Assignments = assignments,
-                CounterType = "IsLongFlight"
-            };
-
-            var rule = Rule<AssignmentContext>.FromExpression(
-                "LongFlightExpressionRule",
-                "Assignments.Count() > 0"
-            );
+        );
 
 
-            var rules = new List<Rule<AssignmentContext>> { rule };
-            var evaluator = new ExpressionRuleEvaluator<AssignmentContext>();
-            var counter = new HotLaunchCounter(rules, evaluator);
+        var rules = new List<Rule<RuleEvaluationContext>> { rule };
+        var evaluator = new ExpressionRuleEvaluator<RuleEvaluationContext>();
+        var counter = new HotLaunchCounter(rules, evaluator);
 
-            counter.Execute(context);
+        counter.Execute(context);
 
-            var leg = assignments[0] as Leg;
-            Assert.Single(leg.CounterValues);
-            Assert.Equal("IsLongFlight", leg.CounterValues[0].CounterTypeSystemName);
-            Assert.Equal(1, leg.CounterValues[0].CounterValue_);
-        }
+        var leg = context.Assignments[0] as Leg;
+        Assert.Single(leg.CounterValues);
+        Assert.Equal("IsLongFlight", leg.CounterValues[0].CounterTypeSystemName);
+        Assert.Equal(1, leg.CounterValues[0].CounterValue_);
     }
 }

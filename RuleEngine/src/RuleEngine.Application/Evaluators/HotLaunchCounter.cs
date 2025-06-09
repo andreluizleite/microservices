@@ -1,20 +1,21 @@
 ﻿using RuleEngine.Domain.Entities;
+using RuleEngine.Domain.Entities.Evaluation;
 using RuleEngine.Domain.Interfaces;
 
 public class HotLaunchCounter
 {
-    private readonly List<Rule<AssignmentContext>> _rules;
-    private readonly IRuleEvaluator<AssignmentContext> _evaluator;
+    private readonly List<Rule<RuleEvaluationContext>> _rules;
+    private readonly IRuleEvaluator<RuleEvaluationContext> _evaluator;
 
     public HotLaunchCounter(
-        IEnumerable<Rule<AssignmentContext>> rules,
-        IRuleEvaluator<AssignmentContext> evaluator)
+        IEnumerable<Rule<RuleEvaluationContext>> rules,
+        IRuleEvaluator<RuleEvaluationContext> evaluator)
     {
         _rules = rules.ToList();
         _evaluator = evaluator;
     }
 
-    public void Execute(AssignmentContext context)
+    public void Execute(RuleEvaluationContext context)
     {
         foreach (var rule in _rules)
         {
@@ -25,17 +26,20 @@ public class HotLaunchCounter
             }
         }
     }
-
-    private void ApplyCounter(AssignmentContext context)
+    private void ApplyCounter(RuleEvaluationContext context)
     {
-        foreach (var leg in context.Assignments.OfType<Leg>())
+        foreach (var assignment in context.Assignments)
         {
-            leg.CounterValues.Add(new CounterValue
+            if (assignment is Leg leg)
             {
-                CounterTypeSystemName = context.CounterType,
-                CounterValue_ = 1
-            });
+                leg.CounterValues.Add(new CounterValue
+                {
+                    CounterTypeSystemName = context.CounterType,
+                    CounterValue_ = 1
+                });
+            }
         }
     }
+
 }
 
