@@ -1,21 +1,22 @@
-﻿using RuleEngine.Domain.CrewManagement.Entities;
+﻿using RuleEngine.Domain.Core.Interfaces;
+using RuleEngine.Domain.Core.Rules;
+using RuleEngine.Domain.CrewManagement.Entities;
 using RuleEngine.Domain.CrewManagement.Entities.Evaluation;
-using RuleEngine.Domain.CrewManagement.Interfaces;
 
 public class HotLaunchCounter
 {
-    private readonly List<Rule<RuleEvaluationContext>> _rules;
-    private readonly IRuleEvaluator<RuleEvaluationContext> _evaluator;
+    private readonly List<Rule<CrewManagementEvaluationContext>> _rules;
+    private readonly IRuleEvaluator<CrewManagementEvaluationContext> _evaluator;
 
     public HotLaunchCounter(
-        IEnumerable<Rule<RuleEvaluationContext>> rules,
-        IRuleEvaluator<RuleEvaluationContext> evaluator)
+        IEnumerable<Rule<CrewManagementEvaluationContext>> rules,
+        IRuleEvaluator<CrewManagementEvaluationContext> evaluator)
     {
         _rules = rules.ToList();
         _evaluator = evaluator;
     }
 
-    public void Execute(RuleEvaluationContext context)
+    public void Execute(CrewManagementEvaluationContext context)
     {
         foreach (var rule in _rules)
         {
@@ -26,7 +27,7 @@ public class HotLaunchCounter
             }
         }
     }
-    private void ApplyCounter(RuleEvaluationContext context)
+    private void ApplyCounter(CrewManagementEvaluationContext context)
     {
         foreach (var assignment in context.Assignments)
         {

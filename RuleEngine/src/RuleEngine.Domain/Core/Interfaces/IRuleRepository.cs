@@ -1,6 +1,6 @@
-﻿namespace RuleEngine.Domain.CrewManagement.Interfaces;
+﻿namespace RuleEngine.Domain.Core.Interfaces;
 
-using RuleEngine.Domain.CrewManagement.Entities;
+using RuleEngine.Domain.Core.Rules;
 
 public interface IRuleRepository<T>
 {

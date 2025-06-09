@@ -1,5 +1,5 @@
-﻿using RuleEngine.Domain.CrewManagement.Entities;
-using RuleEngine.Domain.CrewManagement.Interfaces;
+﻿using RuleEngine.Domain.Core.Interfaces;
+using RuleEngine.Domain.Core.Rules;
 
 namespace RuleEngine.Infrastructure.Persistence;
 public class InMemoryRuleRepository<T> : IRuleRepository<T>
