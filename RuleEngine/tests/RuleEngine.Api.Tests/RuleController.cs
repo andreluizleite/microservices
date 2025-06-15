@@ -25,7 +25,8 @@ namespace RuleEngine.Api.Tests
             };
 
             mockService.Setup(s => s.LoadAsync("test-id")).ReturnsAsync(dto);
-            var controller = new RuleController(mockService.Object);
+            var compiler = new RuleCompilerService<Dictionary<string, object>>();
+            var controller = new RuleController(mockService.Object, compiler);
 
             var result = await controller.GetRule("test-id");
 
@@ -40,7 +41,8 @@ namespace RuleEngine.Api.Tests
             var mockService = new Mock<IRulePersistenceService>();
             mockService.Setup(s => s.LoadAsync("missing-id")).ReturnsAsync((RuleTreeDto?)null);
 
-            var controller = new RuleController(mockService.Object);
+            var compiler = new RuleCompilerService<Dictionary<string, object>>();
+            var controller = new RuleController(mockService.Object, compiler);
 
             var result = await controller.GetRule("missing-id");
 
@@ -58,7 +60,8 @@ namespace RuleEngine.Api.Tests
                 Expression = "1 == 1"
             };
 
-            var controller = new RuleController(mockService.Object);
+            var compiler = new RuleCompilerService<Dictionary<string, object>>();
+            var controller = new RuleController(mockService.Object, compiler);
 
             var result = await controller.SaveRule("save-id", dto);
 
@@ -70,7 +73,8 @@ namespace RuleEngine.Api.Tests
         public async Task SaveRule_ShouldReturnBadRequest_WhenModelStateIsInvalid()
         {
             var mockService = new Mock<IRulePersistenceService>();
-            var controller = new RuleController(mockService.Object);
+            var compiler = new RuleCompilerService<Dictionary<string, object>>();
+            var controller = new RuleController(mockService.Object, compiler);
             controller.ModelState.AddModelError("Name", "Required");
 
             var dto = new RuleTreeDto
@@ -83,8 +87,10 @@ namespace RuleEngine.Api.Tests
             var result = await controller.SaveRule("bad-id", dto);
 
             var badRequest = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Contains("Name", badRequest.Value?.ToString());
+            var errors = Assert.IsType<SerializableError>(badRequest.Value);
+            Assert.True(errors.ContainsKey("Name"));
         }
+
 
         private class PersonContext
         {
@@ -92,32 +98,72 @@ namespace RuleEngine.Api.Tests
         }
 
         [Fact]
-        public async Task GetRule_ShouldAllow_ParsingAndEvaluating_AfterLoading()
+        public async Task EvaluateRule_ShouldReturnSuccess_WhenRuleIsValid()
         {
             var dto = new RuleTreeDto
             {
-                Name = "AgeRule",
+                Name = "AdultCheck",
                 Type = RuleTreeNodeType.Rule,
                 Expression = "Age >= 18"
             };
 
             var mockService = new Mock<IRulePersistenceService>();
-            mockService.Setup(s => s.LoadAsync("age-rule")).ReturnsAsync(dto);
+            mockService.Setup(s => s.LoadAsync("check-age")).ReturnsAsync(dto);
 
-            var controller = new RuleController(mockService.Object);
-            var result = await controller.GetRule("age-rule");
+            var compiler = new RuleCompilerService<Dictionary<string, object>>();
+            var controller = new RuleController(mockService.Object, compiler);
 
-            var ok = Assert.IsType<OkObjectResult>(result);
-            var ruleDto = Assert.IsType<RuleTreeDto>(ok.Value);
-
-            var ruleNode = RuleTreeParser.Parse<PersonContext>(dto);
-            var compiler = new RuleCompilerService<PersonContext>();
-            compiler.Compile(ruleNode);
-
-            var input = new PersonContext { Age = 25 };
-            var passed = ruleNode.Evaluate(input);
-
-            Assert.True(passed);
+            var request = new RuleEvaluationRequest
+            {
+                RuleId = "check-age",
+                Input = new Dictionary<string, object>
+        {
+            { "Age", 30 }
         }
+            };
+
+            var result = await controller.EvaluateRule(request);
+
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<RuleEvaluationResponse>(okResult.Value);
+
+            Assert.True(response.Success);
+            Assert.Empty(response.FailedRules);
+        }
+
+        [Fact]
+        public async Task EvaluateRule_ShouldReturnFailed_WhenRuleFails()
+        {
+            var dto = new RuleTreeDto
+            {
+                Name = "UnderageCheck",
+                Type = RuleTreeNodeType.Rule,
+                Expression = "Age >= 18"
+            };
+
+            var mockService = new Mock<IRulePersistenceService>();
+            mockService.Setup(s => s.LoadAsync("underage")).ReturnsAsync(dto);
+
+            var compiler = new RuleCompilerService<Dictionary<string, object>>();
+            var controller = new RuleController(mockService.Object, compiler);
+
+            var request = new RuleEvaluationRequest
+            {
+                RuleId = "underage",
+                Input = new Dictionary<string, object>
+        {
+            { "Age", 15 }
+        }
+            };
+
+            var result = await controller.EvaluateRule(request);
+
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var response = Assert.IsType<RuleEvaluationResponse>(okResult.Value);
+
+            Assert.False(response.Success);
+            Assert.Contains("UnderageCheck", response.FailedRules);
+        }
+
     }
 }

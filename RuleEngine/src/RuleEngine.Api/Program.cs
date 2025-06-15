@@ -9,6 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 builder.Services.AddScoped<IRulePersistenceService, InMemoryRulePersistenceService>();
+builder.Services.AddSingleton<IRuleCompilerService<Dictionary<string, object>>, RuleCompilerService<Dictionary<string, object>>>();
 builder.Services.AddScoped<IObjectRuleEvaluator<Activity>, ActivityRuleEvaluator>();
 builder.Services.AddScoped<HotLaunchCounter>();
 builder.Services.AddScoped<IObjectRuleEvaluator<AssignmentContext>, ObjectRuleEvaluator<AssignmentContext>>();
