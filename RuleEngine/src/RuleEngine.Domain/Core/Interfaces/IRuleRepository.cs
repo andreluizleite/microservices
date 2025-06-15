@@ -1,6 +1,6 @@
-﻿namespace RuleEngine.Domain.Core.Interfaces;
+﻿using RuleEngine.Domain.Core.Rules;
 
-using RuleEngine.Domain.Core.Rules;
+namespace RuleEngine.Domain.Core.Interfaces;
 
 public interface IRuleRepository<T>
 {
