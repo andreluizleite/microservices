@@ -1,21 +1,45 @@
-﻿namespace RuleEngine.Domain.Core.Rules
+﻿using System;
+using System.Linq.Expressions;
+using System.Linq.Dynamic.Core;
+
+namespace RuleEngine.Domain.Core.Rules
 {
     public class CalculationRule<T, TResult>
     {
         public string Name { get; }
-        public Func<T, TResult> Expression { get; }
+        public string? ExpressionString { get; }
+        public Func<T, TResult>? CompiledExpression { get; private set; }
         public Action<T, TResult>? Action { get; }
 
-        public CalculationRule(string name, Func<T, TResult> expression, Action<T, TResult>? action = null)
+        public CalculationRule(string name, string expressionString, Action<T, TResult>? action = null)
         {
             Name = name;
-            Expression = expression;
+            ExpressionString = expressionString;
             Action = action;
+        }
+
+        public void Compile()
+        {
+            if (string.IsNullOrWhiteSpace(ExpressionString))
+                throw new InvalidOperationException("Expression string is required for compilation.");
+
+            var parameter = Expression.Parameter(typeof(T), "x");
+
+            var lambda = DynamicExpressionParser.ParseLambda(
+                new[] { parameter },
+                typeof(TResult),
+                ExpressionString
+            );
+
+            CompiledExpression = (Func<T, TResult>)lambda.Compile();
         }
 
         public TResult Evaluate(T context)
         {
-            var result = Expression(context);
+            if (CompiledExpression == null)
+                throw new InvalidOperationException("Expression must be compiled before evaluation.");
+
+            var result = CompiledExpression(context);
             Action?.Invoke(context, result);
             return result;
         }

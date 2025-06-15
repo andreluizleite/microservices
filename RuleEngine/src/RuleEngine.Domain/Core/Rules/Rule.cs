@@ -1,10 +1,12 @@
-﻿namespace RuleEngine.Domain.Core.Rules
+﻿using RuleEngine.Domain.Core.Interfaces;
+
+namespace RuleEngine.Domain.Core.Rules
 {
-    public class Rule<T>
+    public class Rule<T> : IRuleComponent<T>
     {
         public string Name { get; }
         public string? Expression { get; }
-        public Func<T, bool>? CompiledCondition { get; }
+        public Func<T, bool>? CompiledCondition { get; private set; }
         public Action<T>? Action { get; }
 
         public bool IsExpressionRule => !string.IsNullOrWhiteSpace(Expression);
@@ -23,5 +25,12 @@
 
         public static Rule<T> FromExpression(string name, string expression)
             => new(name, null, expression);
+
+        public bool Evaluate(T input)
+        {
+            if (CompiledCondition == null)
+                throw new InvalidOperationException("CompiledCondition must be set.");
+            return CompiledCondition(input);
+        }
     }
 }

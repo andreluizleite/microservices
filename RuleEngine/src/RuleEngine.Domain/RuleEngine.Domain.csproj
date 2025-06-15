@@ -10,4 +10,8 @@
     <Folder Include="WorkingSchedules\Enums\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="System.Linq.Dynamic.Core" Version="1.6.5" />
+  </ItemGroup>
+
 </Project>
