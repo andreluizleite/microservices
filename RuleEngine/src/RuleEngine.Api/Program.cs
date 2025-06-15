@@ -1,3 +1,4 @@
+using RuleEngine.Application.Interfaces;
 using RuleEngine.Application.Services;
 using RuleEngine.Domain.Core.Interfaces;
 using RuleEngine.Domain.CrewManagement.Entities;
@@ -7,6 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+builder.Services.AddScoped<IRulePersistenceService, InMemoryRulePersistenceService>();
 builder.Services.AddScoped<IObjectRuleEvaluator<Activity>, ActivityRuleEvaluator>();
 builder.Services.AddScoped<HotLaunchCounter>();
 builder.Services.AddScoped<IObjectRuleEvaluator<AssignmentContext>, ObjectRuleEvaluator<AssignmentContext>>();
