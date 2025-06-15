@@ -1,7 +1,6 @@
 ﻿using RuleEngine.Application.Evaluators;
 using RuleEngine.Application.Services;
 using RuleEngine.Application.UseCases;
-using RuleEngine.Domain.Core.Interfaces;
 using RuleEngine.Domain.Core.Rules;
 using Xunit;
 

@@ -18,12 +18,29 @@ namespace RuleEngine.Application.Services
             if (string.IsNullOrWhiteSpace(rule.Expression))
                 throw new InvalidOperationException("Rule must have a valid expression.");
 
-            var expression = rule.Expression;
             var contextVariables = _contextMapper(context);
 
-            var evaluator = new ExpressionEvaluator();
-            return evaluator.Evaluate(expression, contextVariables);
+            // Build dynamic type and instance for evaluation
+            var parameters = contextVariables
+                .Select(kvp => new DynamicProperty(kvp.Key, kvp.Value?.GetType() ?? typeof(object)))
+                .ToList();
+
+            var inputType = DynamicClassFactory.CreateType(parameters);
+            var inputInstance = Activator.CreateInstance(inputType);
+
+            foreach (var prop in inputType.GetProperties())
+            {
+                if (contextVariables.TryGetValue(prop.Name, out var value))
+                {
+                    prop.SetValue(inputInstance, value);
+                }
+            }
+
+            // Parse and evaluate the expression
+            var parsedLambda = DynamicExpressionParser.ParseLambda(
+                inputType, typeof(bool), rule.Expression);
+
+            return (bool)parsedLambda.Compile().DynamicInvoke(inputInstance);
         }
     }
-
 }

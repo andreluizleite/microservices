@@ -1,5 +1,4 @@
 ﻿using RuleEngine.Application.Evaluators;
-using RuleEngine.Application.Services;
 using RuleEngine.Domain.Core.Rules;
 using RuleEngine.Domain.CrewManagement.Entities;
 using RuleEngine.Domain.CrewManagement.Entities.Evaluation;
