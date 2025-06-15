@@ -1,4 +1,5 @@
-﻿using RuleEngine.Domain.Core.Interfaces;
+﻿using RuleEngine.Domain.Core.Enums;
+using RuleEngine.Domain.Core.Interfaces;
 
 namespace RuleEngine.Domain.Core.Rules
 {
