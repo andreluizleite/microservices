@@ -2,7 +2,7 @@
 
 namespace RuleEngine.Domain.Core.Rules
 {
-    public class Rule<T> : IRuleComponent<T>
+    public class Rule<T> : IRuleNode<T>
     {
         public string Name { get; }
         public string? Expression { get; }

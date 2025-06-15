@@ -2,28 +2,38 @@
 
 namespace RuleEngine.Domain.Core.Rules
 {
-    public class RuleGroup<T> : IRuleComponent<T>
+    public class RuleGroup<T> : IRuleNode<T>
     {
         public string Name { get; }
         public LogicalOperator Operator { get; }
-        public List<IRuleComponent<T>> Children { get; }
+        public List<IRuleNode<T>> Rules { get; }
 
-        public RuleGroup(string name, LogicalOperator op, List<IRuleComponent<T>> children)
+        public RuleGroup(string name, LogicalOperator op, params IRuleNode<T>[] rules)
         {
             Name = name;
             Operator = op;
-            Children = children ?? throw new ArgumentNullException(nameof(children));
+            Rules = rules.ToList();
         }
 
-        public bool Evaluate(T input)
+        public bool Evaluate(T context)
         {
             return Operator switch
             {
-                LogicalOperator.And => Children.TrueForAll(c => c.Evaluate(input)),
-                LogicalOperator.Or => Children.Exists(c => c.Evaluate(input)),
-                LogicalOperator.Not => !Children[0].Evaluate(input),
-                _ => throw new NotSupportedException("Unknown logical operator")
+                LogicalOperator.And => Rules.All(r => r.Evaluate(context)),
+                LogicalOperator.Or => Rules.Any(r => r.Evaluate(context)),
+                LogicalOperator.Not => Rules.Count == 1 && !Rules[0].Evaluate(context),
+                _ => throw new InvalidOperationException("Unsupported logical operator")
             };
         }
+
+        public static RuleGroup<T> And(string name, params IRuleNode<T>[] rules) =>
+            new(name, LogicalOperator.And, rules);
+
+        public static RuleGroup<T> Or(string name, params IRuleNode<T>[] rules) =>
+            new(name, LogicalOperator.Or, rules);
+
+        public static RuleGroup<T> Not(string name, IRuleNode<T> rule) =>
+            new(name, LogicalOperator.Not, rule);
     }
+
 }
