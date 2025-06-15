@@ -6,9 +6,9 @@ using RuleEngine.Domain.Core.Rules;
 
 namespace RuleEngine.Application.Services
 {
-    public static class RuleTreeParser<T>
+    public static class RuleTreeParser
     {
-        public static IRuleNode<T> Parse(RuleTreeDto dto)
+        public static IRuleNode<T> Parse<T>(RuleTreeDto dto)
         {
             switch (dto.Type)
             {
@@ -21,7 +21,7 @@ namespace RuleEngine.Application.Services
                     if (dto.Children == null || dto.Children.Count == 0)
                         throw new ArgumentException("Group node must contain children");
 
-                    var nodes = dto.Children.Select(Parse).ToArray();
+                    var nodes = dto.Children.Select(child => Parse<T>(child)).ToArray();
                     return dto.Operator switch
                     {
                         LogicalOperator.And => RuleGroup<T>.And(dto.Name, nodes),

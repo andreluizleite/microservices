@@ -40,7 +40,7 @@ namespace RuleEngine.Application.Tests
                 }
             };
 
-            var ruleTree = RuleTreeParser<DummyContext>.Parse(dto);
+            var ruleTree = RuleTreeParser.Parse<DummyContext>(dto);
 
             // Compile expression-based rules
             var compiler = new RuleCompilerService<DummyContext>();
